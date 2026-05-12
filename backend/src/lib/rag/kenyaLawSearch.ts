@@ -20,11 +20,24 @@ function getEmbedder(): Promise<EmbedderPipeline> {
     return embedderPromise;
 }
 
+// Serializes embedder invocations. @xenova/transformers v2 holds a single ONNX
+// inference session that is NOT safe under concurrent inference calls; parallel
+// awaits crash the native runtime (silent segfault, no JS stack). This chain
+// guarantees each embed() runs strictly after the previous one resolves.
+let embedQueue: Promise<unknown> = Promise.resolve();
+
 async function embed(text: string): Promise<number[]> {
-    const extractor = await getEmbedder();
-    const output = await extractor(text, { pooling: "mean", normalize: true });
-    const arr = Array.isArray(output.data) ? (output.data[0] as Float32Array) : (output.data as Float32Array);
-    return Array.from(arr);
+    const run = async (): Promise<number[]> => {
+        const extractor = await getEmbedder();
+        const output = await extractor(text, { pooling: "mean", normalize: true });
+        const arr = Array.isArray(output.data) ? (output.data[0] as Float32Array) : (output.data as Float32Array);
+        return Array.from(arr);
+    };
+
+    // Chain this call after the previous one, regardless of whether the previous succeeded or failed.
+    const next = embedQueue.then(run, run);
+    embedQueue = next.catch(() => undefined); // never break the chain on errors
+    return next;
 }
 
 // ---------------------------------------------------------------------------
