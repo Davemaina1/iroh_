@@ -36,10 +36,11 @@ let chromaPromise: Promise<ChromaClient> | null = null;
 function getChroma(): Promise<ChromaClient> {
     if (!chromaPromise) {
         chromaPromise = (async () => {
-            const dbPath = process.env.CHROMA_DB_PATH;
-            if (!dbPath) throw new Error("[kenyaLawSearch] CHROMA_DB_PATH env var is not set");
+            const host = process.env.CHROMA_HOST ?? "localhost";
+            const port = parseInt(process.env.CHROMA_PORT ?? "8000", 10);
+            const ssl = process.env.CHROMA_SSL === "true";
             const { ChromaClient } = await import("chromadb");
-            return new ChromaClient({ path: dbPath });
+            return new ChromaClient({ host, port, ssl });
         })();
     }
     return chromaPromise;
