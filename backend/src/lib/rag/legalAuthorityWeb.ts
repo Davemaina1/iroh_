@@ -4,19 +4,35 @@
 // ---------------------------------------------------------------------------
 
 export const TRUSTED_LEGAL_DOMAINS: string[] = [
-    "kenyalaw.org",           // Kenya Law Reports — statutes, cases, gazettes
-    "parliament.go.ke",       // National Assembly & Senate bills, Hansard
-    "kra.go.ke",              // Kenya Revenue Authority — tax law
-    "odpp.go.ke",             // Director of Public Prosecutions
-    "judiciary.go.ke",        // Judiciary of Kenya — rules, practice directions
-    "competition.go.ke",      // Competition Authority of Kenya
-    "cma.or.ke",              // Capital Markets Authority
-    "centralbank.go.ke",      // Central Bank of Kenya — banking circulars
-    "rlck.or.ke",             // Law Society of Kenya (formerly LSK)
-    "lsk.or.ke",              // Law Society of Kenya alternate domain
-    "eaclj.org",              // East African Court of Justice Law Journal
-    "commonlii.org",          // Commonwealth Legal Information Institute
-    // Future: comesa.int, eacj.org, afchpr.org, uncitral.org
+    // ---- Tier 1: Primary legal authority (must-have) ----
+    "kenyalaw.org",           // Kenya Law — statutes, all court judgments, gazettes, Legal Notices, subsidiary legislation
+    "new.kenyalaw.org",       // Kenya Law's newer portal (akoma ntoso URLs)
+    "parliament.go.ke",       // Bills, Hansard, Acts of Parliament, committee reports
+    "judiciary.go.ke",        // Judiciary — practice directions, cause lists, court rules
+
+    // ---- Tier 2: Major regulators with binding rules and published decisions ----
+    "centralbank.go.ke",      // CBK — prudential guidelines, banking circulars, FX regulations
+    "odpc.go.ke",             // Office of the Data Protection Commissioner — decisions, guidance notes
+    "kra.go.ke",              // Kenya Revenue Authority — tax rulings, public notices, procedures
+    "tat.go.ke",              // Tax Appeals Tribunal — tax case decisions (major source of tax law)
+    "cma.or.ke",              // Capital Markets Authority — listing rules, public offer regulations
+    "cak.go.ke",              // Competition Authority of Kenya — merger decisions, anti-trust enforcement
+    "ira.go.ke",              // Insurance Regulatory Authority — insurance circulars and guidelines
+    "ca.go.ke",               // Communications Authority of Kenya — telecoms, ICT regulations
+    "rba.go.ke",              // Retirement Benefits Authority — pensions
+    "ppra.go.ke",             // Public Procurement Regulatory Authority + PPARB decisions
+    "nema.go.ke",             // National Environment Management Authority — EIA, environmental regulations
+
+    // ---- Tier 3: Specialist regulators and oversight bodies ----
+    "odpp.go.ke",             // Office of the Director of Public Prosecutions
+    "lsk.or.ke",              // Law Society of Kenya — journal, position papers, practice guidance
+    "knchr.org",              // Kenya National Commission on Human Rights — reports, advisories
+    "eacc.go.ke",             // Ethics and Anti-Corruption Commission
+    "iebc.or.ke",             // Independent Electoral and Boundaries Commission
+    "landcommission.go.ke",   // National Land Commission
+    "kipi.go.ke",             // Kenya Industrial Property Institute — trademarks, patents
+    "copyright.go.ke",        // Kenya Copyright Board
+    "treasury.go.ke",         // National Treasury — Finance Bills, circulars
 ];
 
 // ---------------------------------------------------------------------------

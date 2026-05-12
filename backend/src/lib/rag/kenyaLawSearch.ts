@@ -63,9 +63,16 @@ function getCollection(): Promise<Collection> {
 
 export interface NormalizedResult {
     id: string;
-    text: string;
-    source?: string;
-    jurisdiction?: string;
+    title: string;
+    url: string | null;
+    source_archive: string;
+    type: string;
+    court: string | null;
+    year: string | null;
+    jurisdiction: string;
+    binding_in_kenya: boolean;
+    citation: string | null;
+    snippet: string;
     distance: number;
 }
 
@@ -138,11 +145,34 @@ export async function searchKenyaLaw(
         const fullText = docs[i] ?? "";
         const meta = (metas[i] ?? {}) as Record<string, unknown>;
         const distance = distances[i] ?? 1;
+
+        const str = (k: string): string | null => {
+            const v = meta[k];
+            return typeof v === "string" && v.trim() !== "" ? v : null;
+        };
+        const yearStr = (): string | null => {
+            const y = str("year");
+            if (y) return y;
+            const d = str("date");
+            if (d) {
+                const m = d.match(/\b(19|20)\d{2}\b/);
+                if (m) return m[0];
+            }
+            return null;
+        };
+
         return {
             id: String(id),
-            text: fullText.slice(0, 400),
-            source: typeof meta.source === "string" ? meta.source : undefined,
-            jurisdiction: typeof meta.jurisdiction === "string" ? meta.jurisdiction : undefined,
+            title: str("title") ?? "Untitled",
+            url: str("url"),
+            source_archive: str("source_archive") ?? "Kenya Law (Primary)",
+            type: str("type") ?? "case_law",
+            court: str("court"),
+            year: yearStr(),
+            jurisdiction: str("jurisdiction") ?? "kenya",
+            binding_in_kenya: typeof meta.binding_in_kenya === "boolean" ? meta.binding_in_kenya : true,
+            citation: str("citation"),
+            snippet: fullText.slice(0, 400) + (fullText.length > 400 ? "..." : ""),
             distance,
         };
     });
