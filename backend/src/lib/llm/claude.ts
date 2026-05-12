@@ -66,10 +66,10 @@ export async function streamClaude(
                 ? (claudeTools as unknown as Tool[])
                 : undefined,
             max_tokens: MAX_TOKENS,
-            // Claude 4.x models require `thinking.type: "adaptive"` and
-            // drive effort via `output_config.effort` rather than a fixed
-            // token budget. We only opt in when the caller requested it.
-            ...(enableThinking
+            // Extended thinking is only supported on Opus models.
+            // Guard on both the caller flag and the model name so a
+            // misconfigured caller can never send thinking to Haiku/Sonnet.
+            ...(enableThinking && model.startsWith("claude-opus")
                 ? ({
                       thinking: { type: "adaptive" },
                       output_config: { effort: "high" },
@@ -89,7 +89,7 @@ export async function streamClaude(
         stream.on("text", (delta) => {
             callbacks.onContentDelta?.(delta);
         });
-        if (enableThinking) {
+        if (enableThinking && model.startsWith("claude-opus")) {
             stream.on("thinking", (delta) => {
                 sawThinking = true;
                 callbacks.onReasoningDelta?.(delta);
