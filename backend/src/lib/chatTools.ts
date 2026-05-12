@@ -20,6 +20,8 @@ import {
     type LlmMessage,
     type OpenAIToolSchema,
 } from "./llm";
+import { searchKenyaLaw } from "./rag/kenyaLawSearch";
+import { searchLegalAuthorityWeb } from "./rag/legalAuthorityWeb";
 
 const STANDARD_FONT_DATA_URL = (() => {
     try {
@@ -432,6 +434,55 @@ export const TOOLS = [
                     },
                 },
                 required: ["doc_id", "edits"],
+            },
+        },
+    },
+    {
+        type: "function",
+        function: {
+            name: "search_kenya_law",
+            description:
+                "Search the Kenya Law corpus (statutes, case law, regulations, and legal commentaries) using semantic similarity. Call this when you need to cite or verify Kenyan legal authority — do NOT rely on training-data recall for Kenyan statutes or cases.",
+            parameters: {
+                type: "object",
+                properties: {
+                    query: {
+                        type: "string",
+                        description: "Natural-language query describing the legal issue, statute, or case you need.",
+                    },
+                    top_k: {
+                        type: "integer",
+                        description: "Maximum number of results to return (default 8).",
+                    },
+                    jurisdiction_filter: {
+                        type: "string",
+                        enum: ["kenya", "east_africa"],
+                        description: "Optionally restrict results to 'kenya' (default) or 'east_africa'.",
+                    },
+                },
+                required: ["query"],
+            },
+        },
+    },
+    {
+        type: "function",
+        function: {
+            name: "search_legal_authority_web",
+            description:
+                "Search trusted Kenyan and East African legal authority websites (Kenya Law Reports, Parliament, Judiciary, etc.) for up-to-date statutes, gazettes, practice directions, or case summaries. Use when the local corpus search returns no results or you need the most current version of a law.",
+            parameters: {
+                type: "object",
+                properties: {
+                    query: {
+                        type: "string",
+                        description: "Search query for the legal authority web search.",
+                    },
+                    max_results: {
+                        type: "integer",
+                        description: "Maximum number of web results to return (default 5).",
+                    },
+                },
+                required: ["query"],
             },
         },
     },
@@ -2217,6 +2268,46 @@ export async function runToolCalls(
                 tool_call_id: tc.id,
                 content: JSON.stringify(toolResultPayload),
             });
+
+        } else if (tc.function.name === "search_kenya_law") {
+            const query = (args.query as string) ?? "";
+            const topK = typeof args.top_k === "number" ? args.top_k : undefined;
+            const jurisdictionFilter = args.jurisdiction_filter as "kenya" | "east_africa" | undefined;
+            try {
+                const result = await searchKenyaLaw(query, {
+                    topK,
+                    jurisdictionFilter,
+                });
+                toolResults.push({
+                    role: "tool",
+                    tool_call_id: tc.id,
+                    content: JSON.stringify(result),
+                });
+            } catch (e) {
+                toolResults.push({
+                    role: "tool",
+                    tool_call_id: tc.id,
+                    content: JSON.stringify({ results: [], note: `search_kenya_law threw: ${String(e)}` }),
+                });
+            }
+
+        } else if (tc.function.name === "search_legal_authority_web") {
+            const query = (args.query as string) ?? "";
+            const maxResults = typeof args.max_results === "number" ? args.max_results : undefined;
+            try {
+                const result = await searchLegalAuthorityWeb(query, { maxResults });
+                toolResults.push({
+                    role: "tool",
+                    tool_call_id: tc.id,
+                    content: JSON.stringify(result),
+                });
+            } catch (e) {
+                toolResults.push({
+                    role: "tool",
+                    tool_call_id: tc.id,
+                    content: JSON.stringify({ results: [], note: `search_legal_authority_web threw: ${String(e)}` }),
+                });
+            }
         }
     }
 
