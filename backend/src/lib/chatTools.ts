@@ -16,8 +16,7 @@ import { buildDownloadUrl } from "./downloadTokens";
 import { attachActiveVersionPaths, loadActiveVersion } from "./documentVersions";
 import {
     streamChatWithTools,
-    resolveModel,
-    DEFAULT_MAIN_MODEL,
+    QUICK_MODEL,
     type LlmMessage,
     type OpenAIToolSchema,
 } from "./llm";
@@ -133,6 +132,8 @@ GENERAL GUIDANCE:
 - Do not fabricate document content
 - Do not use emojis in your responses.
 `;
+
+export const DRAFT_SYSTEM_PROMPT_EXTRA = `You are drafting a legal document. Produce a complete, polished, professional draft in the requested format. Do not analyze — produce the document itself. Use Kenyan legal conventions and terminology. Cite relevant statutes inline where appropriate.`;
 
 export const PROJECT_EXTRA_TOOLS = [
     {
@@ -2407,7 +2408,10 @@ export async function runLLMStream(params: {
         citationsOpenSeen = false;
     };
 
-    const selectedModel = resolveModel(model, DEFAULT_MAIN_MODEL);
+    const selectedModel = (model && model.startsWith("claude")) ? model : QUICK_MODEL;
+    if (selectedModel !== model) {
+        console.warn("[Iroh] runLLMStream falling back to QUICK_MODEL. Received:", model);
+    }
 
     await streamChatWithTools({
         model: selectedModel,

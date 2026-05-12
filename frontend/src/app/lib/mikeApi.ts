@@ -429,7 +429,7 @@ export async function streamChat(payload: {
     }[];
     chat_id?: string;
     project_id?: string;
-    model?: string;
+    mode?: string;
     signal?: AbortSignal;
 }): Promise<Response> {
     const { signal, ...body } = payload;
@@ -457,7 +457,7 @@ export async function streamProjectChat(payload: {
     projectId: string;
     messages: StreamChatMessage[];
     chat_id?: string;
-    model?: string;
+    mode?: string;
     displayed_doc?: { filename: string; document_id: string };
     attached_documents?: { filename: string; document_id: string }[];
     signal?: AbortSignal;

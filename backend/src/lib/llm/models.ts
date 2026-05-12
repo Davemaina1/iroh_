@@ -1,6 +1,20 @@
 import type { Provider } from "./types";
 
 // ---------------------------------------------------------------------------
+// Iroh mode → model mapping
+// ---------------------------------------------------------------------------
+export const QUICK_MODEL = "claude-haiku-4-5-20251001"; // fast, lightweight
+export const DEEP_MODEL = "claude-opus-4-7";            // most capable
+export const DRAFT_MODEL = "claude-opus-4-7";           // same as deep, different system prompt
+
+export type ChatMode = "quick" | "deep" | "draft";
+
+export function modeToModel(mode: string | undefined): string {
+    if (mode === "deep" || mode === "draft") return DEEP_MODEL;
+    return QUICK_MODEL; // "quick" or any unknown value → Haiku
+}
+
+// ---------------------------------------------------------------------------
 // Canonical model IDs
 // ---------------------------------------------------------------------------
 // Main-chat tier (top-end) — user picks one of these per message.
@@ -16,12 +30,12 @@ export const GEMINI_MID_MODELS = ["gemini-3-flash-preview"] as const;
 
 // Low-tier (used for title generation, lightweight extractions) — user picks
 // one in account settings.
-export const CLAUDE_LOW_MODELS = ["claude-haiku-4-5"] as const;
+export const CLAUDE_LOW_MODELS = ["claude-haiku-4-5", "claude-haiku-4-5-20251001"] as const;
 export const GEMINI_LOW_MODELS = ["gemini-3.1-flash-lite-preview"] as const;
 
-export const DEFAULT_MAIN_MODEL = "gemini-3-flash-preview";
-export const DEFAULT_TITLE_MODEL = "gemini-3.1-flash-lite-preview";
-export const DEFAULT_TABULAR_MODEL = "gemini-3-flash-preview";
+export const DEFAULT_MAIN_MODEL = QUICK_MODEL;
+export const DEFAULT_TITLE_MODEL = QUICK_MODEL;
+export const DEFAULT_TABULAR_MODEL = "claude-sonnet-4-6";
 
 const ALL_MODELS = new Set<string>([
     ...CLAUDE_MAIN_MODELS,
@@ -30,6 +44,8 @@ const ALL_MODELS = new Set<string>([
     ...GEMINI_MID_MODELS,
     ...CLAUDE_LOW_MODELS,
     ...GEMINI_LOW_MODELS,
+    QUICK_MODEL,
+    DEEP_MODEL,
 ]);
 
 // ---------------------------------------------------------------------------

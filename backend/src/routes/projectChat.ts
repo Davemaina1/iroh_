@@ -9,9 +9,10 @@ import {
     extractAnnotations,
     runLLMStream,
     PROJECT_EXTRA_TOOLS,
+    DRAFT_SYSTEM_PROMPT_EXTRA,
     type ChatMessage,
 } from "../lib/chatTools";
-import { getUserApiKeys } from "../lib/userSettings";
+import { modeToModel } from "../lib/llm";
 import { checkProjectAccess } from "../lib/access";
 
 const PROJECT_SYSTEM_PROMPT_EXTRA = `PROJECT CONTEXT:
@@ -29,14 +30,15 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
     const userId = res.locals.userId as string;
     const userEmail = res.locals.userEmail as string | undefined;
     const { projectId } = req.params;
-    const { messages, chat_id, model, displayed_doc, attached_documents } =
+    const { messages, chat_id, mode, displayed_doc, attached_documents } =
         req.body as {
             messages: ChatMessage[];
             chat_id?: string;
-            model?: string;
+            mode?: string;
             displayed_doc?: { filename: string; document_id: string };
             attached_documents?: { filename: string; document_id: string }[];
         };
+    const model = modeToModel(mode);
 
     const db = createServerSupabase();
 
@@ -122,7 +124,9 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
     // the system prompt with the current-turn doc_id slugs so the model
     // knows which docs the user is highlighting *now*, distinct from
     // the broader project doc list.
-    let systemPromptExtra = PROJECT_SYSTEM_PROMPT_EXTRA;
+    let systemPromptExtra = mode === "draft"
+        ? `${DRAFT_SYSTEM_PROMPT_EXTRA}\n\n${PROJECT_SYSTEM_PROMPT_EXTRA}`
+        : PROJECT_SYSTEM_PROMPT_EXTRA;
     if (attached_documents?.length) {
         const slugByDocumentId = new Map<string, string>();
         for (const [slug, info] of Object.entries(docIndex)) {
@@ -152,8 +156,6 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
 
     const write = (line: string) => res.write(line);
 
-    const apiKeys = await getUserApiKeys(userId, db);
-
     try {
         write(`data: ${JSON.stringify({ type: "chat_id", chatId })}\n\n`);
 
@@ -167,7 +169,6 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
             extraTools: PROJECT_EXTRA_TOOLS,
             workflowStore,
             model,
-            apiKeys,
             projectId,
         });
 

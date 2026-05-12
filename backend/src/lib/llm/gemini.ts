@@ -1,3 +1,4 @@
+// @ts-nocheck — dead code preserved for later removal; runtime guards throw before any Gemini path executes.
 import { GoogleGenAI } from "@google/genai";
 import type {
     StreamChatParams,
@@ -43,6 +44,7 @@ function toNativeContents(messages: StreamChatParams["messages"]): GeminiContent
 export async function streamGemini(
     params: StreamChatParams,
 ): Promise<StreamChatResult> {
+    throw new Error("[Iroh] Gemini provider is disabled — all chat must route through Claude. Investigate caller.");
     const { model, systemPrompt, tools = [], callbacks = {}, runTools, apiKeys, enableThinking } = params;
     const maxIter = params.maxIterations ?? 10;
     const ai = client(apiKeys?.gemini);
@@ -150,6 +152,7 @@ export async function completeGeminiText(params: {
     user: string;
     apiKeys?: { gemini?: string | null };
 }): Promise<string> {
+    throw new Error("[Iroh] Gemini provider is disabled — all chat must route through Claude. Investigate caller.");
     const ai = client(params.apiKeys?.gemini);
     const resp = await ai.models.generateContent({
         model: params.model,

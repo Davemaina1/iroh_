@@ -20,15 +20,8 @@ import {
 import { AddDocButton } from "./AddDocButton";
 import { AddDocumentsModal } from "../shared/AddDocumentsModal";
 import { AssistantWorkflowModal } from "./AssistantWorkflowModal";
-import { ApiKeyMissingModal } from "../shared/ApiKeyMissingModal";
-import { ModelToggle } from "./ModelToggle";
-import { useSelectedModel } from "@/app/hooks/useSelectedModel";
-import { useUserProfile } from "@/contexts/UserProfileContext";
-import {
-    getModelProvider,
-    isModelAvailable,
-    type ModelProvider,
-} from "@/app/lib/modelAvailability";
+import { ModeToggle } from "./ModeToggle";
+import { useSelectedMode } from "@/app/hooks/useSelectedMode";
 import type { MikeDocument, MikeMessage } from "../shared/types";
 
 export interface ChatInputHandle {
@@ -65,17 +58,10 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
         id: string;
         title: string;
     } | null>(null);
-    const [model, setModel] = useSelectedModel();
-    const { profile } = useUserProfile();
-    const apiKeys = {
-        claudeApiKey: profile?.claudeApiKey ?? null,
-        geminiApiKey: profile?.geminiApiKey ?? null,
-    };
+    const [mode, setMode] = useSelectedMode();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [docSelectorOpen, setDocSelectorOpen] = useState(false);
     const [workflowModalOpen, setWorkflowModalOpen] = useState(false);
-    const [apiKeyModalProvider, setApiKeyModalProvider] =
-        useState<ModelProvider | null>(null);
 
     useImperativeHandle(ref, () => ({
         addDoc: (doc: MikeDocument) => {
@@ -116,10 +102,6 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
     const handleSubmit = () => {
         const query = value.trim();
         if (!query || isLoading) return;
-        if (!isModelAvailable(model, apiKeys)) {
-            setApiKeyModalProvider(getModelProvider(model));
-            return;
-        }
         setValue("");
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto";
@@ -138,7 +120,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
             content: query,
             files: files.length > 0 ? files : undefined,
             workflow: wf ?? undefined,
-            model,
+            mode,
         });
     };
 
@@ -274,10 +256,9 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
                         </div>
 
                         <div className="flex items-center gap-1">
-                            <ModelToggle
-                                value={model}
-                                onChange={setModel}
-                                apiKeys={apiKeys}
+                            <ModeToggle
+                                value={mode}
+                                onChange={setMode}
                             />
                             <button
                                 type="button"
@@ -315,11 +296,6 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
                 }}
                 projectName={projectName}
                 projectCmNumber={projectCmNumber}
-            />
-            <ApiKeyMissingModal
-                open={apiKeyModalProvider !== null}
-                provider={apiKeyModalProvider}
-                onClose={() => setApiKeyModalProvider(null)}
             />
         </>
     );

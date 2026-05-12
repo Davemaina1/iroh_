@@ -315,7 +315,7 @@ export function useAssistantChat({
                 workflow: currentMessage.workflow,
             }));
 
-            const model = message.model;
+            const mode = message.mode;
 
             const displayedDoc = opts?.displayedDoc ?? null;
 
@@ -336,7 +336,7 @@ export function useAssistantChat({
                       projectId,
                       messages: apiMessages,
                       chat_id: chatId,
-                      model,
+                      mode,
                       displayed_doc: displayedDoc
                           ? {
                                 filename: displayedDoc.filename,
@@ -350,7 +350,7 @@ export function useAssistantChat({
                 : streamChat({
                       messages: apiMessages,
                       chat_id: chatId,
-                      model,
+                      mode,
                       signal: controller.signal,
                   }));
 

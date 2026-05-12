@@ -8,10 +8,11 @@ import {
     buildWorkflowStore,
     extractAnnotations,
     runLLMStream,
+    DRAFT_SYSTEM_PROMPT_EXTRA,
     type ChatMessage,
 } from "../lib/chatTools";
-import { completeText } from "../lib/llm";
-import { getUserApiKeys, getUserModelSettings } from "../lib/userSettings";
+import { completeText, modeToModel } from "../lib/llm";
+import { getUserModelSettings } from "../lib/userSettings";
 import { checkProjectAccess } from "../lib/access";
 
 export const chatRouter = Router();
@@ -288,15 +289,10 @@ chatRouter.post("/:chatId/generate-title", requireAuth, async (req, res) => {
         return void res.status(404).json({ detail: "Chat not found" });
 
     try {
-        const { title_model, api_keys } = await getUserModelSettings(
-            userId,
-            db,
-        );
         const titleText = await completeText({
-            model: title_model,
+            model: "claude-haiku-4-5-20251001",
             user: `Generate a concise title (3–6 words) for a chat in an AI Legal Platform that starts with this message. The title should describe the topic or document — do NOT include words like "Legal Assistant", "AI", "Chat", or any similar prefix. Return only the title, no quotes or punctuation.\n\nMessage: ${message.slice(0, 500)}`,
             maxTokens: 64,
-            apiKeys: api_keys,
         });
         const title = titleText.trim() || message.slice(0, 60);
 
@@ -316,12 +312,13 @@ chatRouter.post("/:chatId/generate-title", requireAuth, async (req, res) => {
 // POST /chat — streaming
 chatRouter.post("/", requireAuth, async (req, res) => {
     const userId = res.locals.userId as string;
-    const { messages, chat_id, project_id, model } = req.body as {
+    const { messages, chat_id, project_id, mode } = req.body as {
         messages: ChatMessage[];
         chat_id?: string;
         project_id?: string;
-        model?: string;
+        mode?: string;
     };
+    const model = modeToModel(mode);
 
     console.log("[chat/stream] incoming request", {
         userId,
@@ -416,7 +413,8 @@ chatRouter.post("/", requireAuth, async (req, res) => {
         db,
         docIndex,
     );
-    const apiMessages = buildMessages(enrichedMessages, docAvailability);
+    const draftExtra = mode === "draft" ? DRAFT_SYSTEM_PROMPT_EXTRA : undefined;
+    const apiMessages = buildMessages(enrichedMessages, docAvailability, draftExtra);
 
     const workflowStore = await buildWorkflowStore(userId, userEmail, db);
 
@@ -424,6 +422,8 @@ chatRouter.post("/", requireAuth, async (req, res) => {
         apiMessageCount: apiMessages.length,
         docCount: Object.keys(docIndex).length,
         workflowCount: Object.keys(workflowStore).length,
+        mode,
+        model,
     });
 
     res.setHeader("Content-Type", "text/event-stream");
@@ -433,8 +433,6 @@ chatRouter.post("/", requireAuth, async (req, res) => {
     res.flushHeaders();
 
     const write = (line: string) => res.write(line);
-
-    const apiKeys = await getUserApiKeys(userId, db);
 
     try {
         write(`data: ${JSON.stringify({ type: "chat_id", chatId })}\n\n`);
@@ -448,7 +446,6 @@ chatRouter.post("/", requireAuth, async (req, res) => {
             write,
             workflowStore,
             model,
-            apiKeys,
             projectId: project_id ?? null,
         });
 

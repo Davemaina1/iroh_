@@ -147,7 +147,8 @@ export interface MikeMessage {
   content: string;
   files?: { filename: string; document_id?: string }[];
   workflow?: { id: string; title: string };
-  model?: string;
+  mode?: "quick" | "deep" | "draft";
+  model?: string; // kept for tabular-review backward compatibility
   annotations?: MikeCitationAnnotation[];
   events?: AssistantEvent[];
   /** Set when streaming failed; rendered as a red error block. */

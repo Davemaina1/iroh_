@@ -1,17 +1,26 @@
 import { streamClaude, completeClaudeText } from "./claude";
-import { streamGemini, completeGeminiText } from "./gemini";
-import { providerForModel } from "./models";
+import { QUICK_MODEL } from "./models";
 import type { StreamChatParams, StreamChatResult, UserApiKeys } from "./types";
 
 export * from "./types";
 export * from "./models";
 
+// Always route to Claude; normalize any non-Claude model ID to QUICK_MODEL.
+// User-provided API keys are bypassed — claude.ts falls back to
+// process.env.ANTHROPIC_API_KEY when apiKeys.claude is null/empty.
+function toClaudeParams(params: StreamChatParams): StreamChatParams {
+    let model = params.model;
+    if (!model.startsWith("claude")) {
+        console.warn("[Iroh] toClaudeParams: non-Claude model requested, coercing to QUICK_MODEL:", model);
+        model = QUICK_MODEL;
+    }
+    return { ...params, model, apiKeys: { claude: null } };
+}
+
 export async function streamChatWithTools(
     params: StreamChatParams,
 ): Promise<StreamChatResult> {
-    const provider = providerForModel(params.model);
-    if (provider === "claude") return streamClaude(params);
-    return streamGemini(params);
+    return streamClaude(toClaudeParams(params));
 }
 
 export async function completeText(params: {
@@ -21,7 +30,10 @@ export async function completeText(params: {
     maxTokens?: number;
     apiKeys?: UserApiKeys;
 }): Promise<string> {
-    const provider = providerForModel(params.model);
-    if (provider === "claude") return completeClaudeText(params);
-    return completeGeminiText(params);
+    let model = params.model;
+    if (!model.startsWith("claude")) {
+        console.warn("[Iroh] completeText: non-Claude model requested, coercing to QUICK_MODEL:", model);
+        model = QUICK_MODEL;
+    }
+    return completeClaudeText({ ...params, model, apiKeys: { claude: null } });
 }

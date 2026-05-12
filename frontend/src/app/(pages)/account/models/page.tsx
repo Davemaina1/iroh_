@@ -24,6 +24,11 @@ export default function ModelsAndApiKeysPage() {
 
     return (
         <div className="space-y-4">
+            {/* Iroh managed-model notice */}
+            <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                Models are managed by Iroh. Configuration is not required.
+            </div>
+            <div className="pointer-events-none select-none opacity-40">
             {/* Model Preferences */}
             <div className="pb-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -89,6 +94,7 @@ export default function ModelsAndApiKeysPage() {
                     />
                 </div>
             </div>
+            </div>{/* end pointer-events-none wrapper */}
         </div>
     );
 }

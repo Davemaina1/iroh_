@@ -1,7 +1,7 @@
 import { createServerSupabase } from "./supabase";
 import {
     resolveModel,
-    DEFAULT_TITLE_MODEL,
+    QUICK_MODEL,
     DEFAULT_TABULAR_MODEL,
     type UserApiKeys,
 } from "./llm";
@@ -12,14 +12,9 @@ export type UserModelSettings = {
     api_keys: UserApiKeys;
 };
 
-// Title generation is a lightweight task — always routed to the cheapest model
-// of whichever provider the user has keys for: Gemini Flash Lite if Gemini is
-// available, otherwise Claude Haiku. With no user keys set, defaults to Gemini
-// (the dev-mode env fallback).
-function resolveTitleModel(apiKeys: UserApiKeys): string {
-    if (apiKeys.gemini?.trim()) return DEFAULT_TITLE_MODEL;
-    if (apiKeys.claude?.trim()) return "claude-haiku-4-5";
-    return DEFAULT_TITLE_MODEL;
+// Title generation always uses Claude Haiku (QUICK_MODEL) — server-side key only.
+function resolveTitleModel(): string {
+    return QUICK_MODEL;
 }
 
 export async function getUserModelSettings(
@@ -39,7 +34,7 @@ export async function getUserModelSettings(
     };
 
     return {
-        title_model: resolveTitleModel(api_keys),
+        title_model: resolveTitleModel(),
         tabular_model: resolveModel(data?.tabular_model, DEFAULT_TABULAR_MODEL),
         api_keys,
     };
