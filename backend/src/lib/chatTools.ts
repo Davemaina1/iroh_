@@ -153,6 +153,13 @@ KENYAN LEGAL AUTHORITY — GROUNDING AND HONESTY CONTRACT (overrides any conflic
 
 8. When the user has attached documents, document-grounded analysis (governed by the DOCUMENT CITATION INSTRUCTIONS above) takes priority for claims about those documents. Use the retrieval tools to ground any legal authority you cite in your analysis.
 
+RETRIEVAL-TOOL CITATION SCHEMA:
+Each result from search_kenya_law and search_legal_authority_web now carries a "chunk_id" field (e.g. "corpus:abc123:0" or "web:abc123:0"). When you cite a retrieval result in a <CITATIONS> block:
+- Set "doc_id" to the exact chunk_id string from that result — copy it verbatim.
+- Do NOT write a URL, a filename, "corpus", "web", "local", "kenyalaw", or any placeholder as doc_id. Only the chunk_id value from the result is valid.
+- Set "page" to 1 for all retrieval results.
+Example: { "ref": "1", "doc_id": "corpus:toolu_01Abc:2", "page": 1, "quote": "the relevant passage", "filename": "Republic v Karanja [2019] eKLR" }
+
 Violating any of these rules is worse than admitting you do not know. Lawyers will verify citations. An invented or paraphrased authority is the single worst failure mode of this product.
 `;
 
@@ -1576,6 +1583,7 @@ export async function runToolCalls(
     docsReplicated: DocReplicatedResult[];
     workflowsApplied: { workflow_id: string; title: string }[];
     docsEdited: DocEditedResult[];
+    citationSources: Array<{ chunk_id: string; url: string | null; title: string; source_label: string }>;
 }> {
     const toolResults: unknown[] = [];
     const docsRead: { filename: string; document_id?: string }[] = [];
@@ -1588,6 +1596,7 @@ export async function runToolCalls(
     const docsReplicated: DocReplicatedResult[] = [];
     const workflowsApplied: { workflow_id: string; title: string }[] = [];
     const docsEdited: DocEditedResult[] = [];
+    const citationSourcesCollector: Array<{ chunk_id: string; url: string | null; title: string; source_label: string }> = [];
 
     for (const tc of toolCalls) {
         let args: Record<string, unknown> = {};
@@ -2274,14 +2283,25 @@ export async function runToolCalls(
             const topK = typeof args.top_k === "number" ? args.top_k : undefined;
             const jurisdictionFilter = args.jurisdiction_filter as "kenya" | "east_africa" | undefined;
             try {
-                const result = await searchKenyaLaw(query, {
-                    topK,
-                    jurisdictionFilter,
+                const result = await searchKenyaLaw(query, { topK, jurisdictionFilter });
+                const numbered = result.results.map((r, i) => {
+                    const chunk_id = `corpus:${tc.id}:${i}`;
+                    citationSourcesCollector.push({
+                        chunk_id,
+                        url: r.url ?? null,
+                        title: r.title,
+                        source_label: r.source_archive ?? "Kenya Law (Corpus)",
+                    });
+                    return { ...r, chunk_id };
                 });
                 toolResults.push({
                     role: "tool",
                     tool_call_id: tc.id,
-                    content: JSON.stringify(result),
+                    content: JSON.stringify({
+                        results: numbered,
+                        note: result.note,
+                        _citation_instructions: "For every result you cite, set doc_id in the <CITATIONS> block to the chunk_id field verbatim (e.g. \"corpus:abc123:0\"). Do NOT invent a doc_id; use only chunk_ids from this response. Set page to 1.",
+                    }),
                 });
             } catch (e) {
                 toolResults.push({
@@ -2296,10 +2316,24 @@ export async function runToolCalls(
             const maxResults = typeof args.max_results === "number" ? args.max_results : undefined;
             try {
                 const result = await searchLegalAuthorityWeb(query, { maxResults });
+                const numbered = result.results.map((r, i) => {
+                    const chunk_id = `web:${tc.id}:${i}`;
+                    let source_label = "Legal Web Source";
+                    try {
+                        const hostname = new URL(r.url).hostname.replace(/^www\./, "");
+                        source_label = hostname;
+                    } catch { /* non-parseable URL — keep default */ }
+                    citationSourcesCollector.push({ chunk_id, url: r.url, title: r.title, source_label });
+                    return { ...r, chunk_id };
+                });
                 toolResults.push({
                     role: "tool",
                     tool_call_id: tc.id,
-                    content: JSON.stringify(result),
+                    content: JSON.stringify({
+                        results: numbered,
+                        note: result.note,
+                        _citation_instructions: "For every result you cite, set doc_id in the <CITATIONS> block to the chunk_id field verbatim (e.g. \"web:abc123:0\"). Do NOT invent a doc_id; use only chunk_ids from this response. Set page to 1.",
+                    }),
                 });
             } catch (e) {
                 toolResults.push({
@@ -2319,6 +2353,7 @@ export async function runToolCalls(
         docsReplicated,
         workflowsApplied,
         docsEdited,
+        citationSources: citationSourcesCollector,
     };
 }
 
@@ -2403,6 +2438,10 @@ type AssistantEvent =
           version_number: number | null;
           download_url: string;
           annotations: EditAnnotation[];
+      }
+    | {
+          type: "citation_sources";
+          sources: Array<{ chunk_id: string; url: string | null; title: string; source_label: string }>;
       }
     | { type: "content"; text: string };
 
@@ -2588,6 +2627,7 @@ export async function runLLMStream(params: {
                 docsReplicated,
                 workflowsApplied,
                 docsEdited,
+                citationSources,
             } = await runToolCalls(
                     toolCalls,
                     docStore,
@@ -2650,6 +2690,10 @@ export async function runLLMStream(params: {
                     download_url: e.download_url,
                     annotations: e.annotations,
                 });
+            }
+            if (citationSources.length > 0) {
+                write(`data: ${JSON.stringify({ type: "citation_sources", sources: citationSources })}\n\n`);
+                events.push({ type: "citation_sources", sources: citationSources });
             }
 
             // Index alignment would break if any tool branch skips its

@@ -776,6 +776,34 @@ export function useAssistantChat({
                             });
                             continue;
                         }
+
+                        if (data.type === "citation_sources") {
+                            const incoming = (data.sources ?? []) as Array<{
+                                chunk_id: string;
+                                url: string | null;
+                                title: string;
+                                source_label: string;
+                            }>;
+                            const map: Record<string, { url: string | null; title: string; source_label: string }> = {};
+                            for (const s of incoming) {
+                                map[s.chunk_id] = { url: s.url, title: s.title, source_label: s.source_label };
+                            }
+                            setMessages((prev) => {
+                                const updated = [...prev];
+                                const last = updated[updated.length - 1];
+                                if (last?.role === "assistant") {
+                                    updated[updated.length - 1] = {
+                                        ...last,
+                                        citationSourcesById: {
+                                            ...(last.citationSourcesById ?? {}),
+                                            ...map,
+                                        },
+                                    };
+                                }
+                                return updated;
+                            });
+                            continue;
+                        }
                     } catch (e) {
                         console.warn(
                             "[useAssistantChat] failed to parse SSE line:",

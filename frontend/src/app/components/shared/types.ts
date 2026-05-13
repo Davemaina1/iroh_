@@ -140,6 +140,10 @@ export type AssistantEvent =
         error?: string;
         isStreaming?: boolean;
     }
+  | {
+        type: "citation_sources";
+        sources: Array<{ chunk_id: string; url: string | null; title: string; source_label: string }>;
+    }
   | { type: "content"; text: string; isStreaming?: boolean };
 
 export interface MikeMessage {
@@ -151,6 +155,8 @@ export interface MikeMessage {
   model?: string; // kept for tabular-review backward compatibility
   annotations?: MikeCitationAnnotation[];
   events?: AssistantEvent[];
+  /** chunk_id → { url, title, source_label } map, populated by citation_sources SSE events. */
+  citationSourcesById?: Record<string, { url: string | null; title: string; source_label: string }>;
   /** Set when streaming failed; rendered as a red error block. */
   error?: string;
 }

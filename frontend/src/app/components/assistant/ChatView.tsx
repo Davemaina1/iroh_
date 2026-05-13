@@ -131,20 +131,27 @@ export function ChatView({
      * AssistantMessage when the user clicks a numbered citation pill.
      */
     const openCitation = useCallback(
-        (citation: MikeCitationAnnotation) => {
-            // Web citations: the model puts the full URL in doc_id when citing
-            // a web source (kenyalaw.org, regulator domains, etc.). These have
-            // no corresponding uploaded document, so the DocPanel fetch path
-            // (/single-documents/{id}/docx) 404s. Open in a new tab instead.
+        (citation: MikeCitationAnnotation, msg?: MikeMessage) => {
             const docIdStr = citation.doc_id ?? "";
+
+            // Priority 1: stable chunk_id — look up URL from citation_sources map.
+            if (docIdStr.startsWith("corpus:") || docIdStr.startsWith("web:")) {
+                const source = msg?.citationSourcesById?.[docIdStr];
+                if (source?.url) {
+                    window.open(source.url, "_blank", "noopener,noreferrer");
+                    return;
+                }
+                // chunk_id present but no map entry — nothing useful to open.
+                return;
+            }
+
+            // Priority 2: model placed a raw URL in doc_id (legacy path).
             if (docIdStr.startsWith("http://") || docIdStr.startsWith("https://")) {
                 window.open(docIdStr, "_blank", "noopener,noreferrer");
                 return;
             }
 
-            // Document citations: model cited an uploaded document by chat-local
-            // doc-N handle. document_id resolves to the real backend document and
-            // DocPanel fetches its docx for inline rendering.
+            // Priority 3: uploaded document citation — open in DocPanel.
             upsertTab({
                 kind: "citation",
                 id: citation.document_id,
@@ -526,7 +533,7 @@ export function ChatView({
                                                         : undefined
                                                 }
                                                 annotations={msg.annotations}
-                                                onCitationClick={openCitation}
+                                                onCitationClick={(c) => openCitation(c, msg)}
                                                 minHeight={
                                                     i === lastAssistantIndex
                                                         ? minHeight
