@@ -1,0 +1,4 @@
+.venv/
+__pycache__/
+*.pyc
+.bm25_cache.pkl

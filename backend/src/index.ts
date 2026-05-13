@@ -32,7 +32,32 @@ app.use("/user", userRouter);
 app.use("/users", userRouter);
 app.use("/download", downloadsRouter);
 
-app.get("/health", (_req, res) => res.json({ ok: true }));
+app.get("/health", async (_req, res) => {
+  const RAG_URL = process.env.RAG_SERVICE_URL ?? "http://localhost:8001";
+  let ragStatus: "ok" | "unreachable" | "loading" = "unreachable";
+  let ragChunks: number | null = null;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2000);
+    const r = await fetch(`${RAG_URL}/health`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (r.status === 503) {
+      ragStatus = "loading";
+    } else if (r.ok) {
+      const body = await r.json() as { status?: string; chunks_indexed?: number };
+      ragStatus = "ok";
+      ragChunks = body.chunks_indexed ?? null;
+    }
+  } catch {
+    ragStatus = "unreachable";
+  }
+  res.json({
+    status: ragStatus === "ok" ? "ok" : "degraded",
+    backend: "ok",
+    rag_service: ragStatus,
+    rag_service_chunks: ragChunks,
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Mike backend running on port ${PORT}`);
