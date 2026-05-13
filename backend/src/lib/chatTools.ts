@@ -158,7 +158,7 @@ Each result from search_kenya_law and search_legal_authority_web now carries a "
 - Set "doc_id" to the exact chunk_id string from that result — copy it verbatim.
 - Do NOT write a URL, a filename, "corpus", "web", "local", "kenyalaw", or any placeholder as doc_id. Only the chunk_id value from the result is valid.
 - Set "page" to 1 for all retrieval results.
-Example: { "ref": "1", "doc_id": "corpus:toolu_01Abc:2", "page": 1, "quote": "the relevant passage", "filename": "Republic v Karanja [2019] eKLR" }
+Example: { "ref": 1, "doc_id": "corpus:toolu_01Abc:2", "page": 1, "quote": "the relevant passage", "filename": "Republic v Karanja [2019] eKLR" }
 
 Violating any of these rules is worse than admitting you do not know. Lawyers will verify citations. An invented or paraphrased authority is the single worst failure mode of this product.
 `;
@@ -505,7 +505,8 @@ type ParsedCitation = {
 function normalizeCitation(raw: unknown): ParsedCitation | null {
     if (!raw || typeof raw !== "object") return null;
     const c = raw as Record<string, unknown>;
-    if (typeof c.ref !== "number" || typeof c.doc_id !== "string") return null;
+    const ref = typeof c.ref === "number" ? c.ref : typeof c.ref === "string" ? parseInt(c.ref, 10) : NaN;
+    if (!Number.isFinite(ref) || typeof c.doc_id !== "string") return null;
     if (typeof c.quote !== "string" || !c.quote) return null;
     let page: number | string;
     if (typeof c.page === "number") {
@@ -517,7 +518,7 @@ function normalizeCitation(raw: unknown): ParsedCitation | null {
         if (!Number.isFinite(n)) return null;
         page = n;
     }
-    return { ref: c.ref, doc_id: c.doc_id, page, quote: c.quote };
+    return { ref, doc_id: c.doc_id as string, page, quote: c.quote as string };
 }
 
 // ---------------------------------------------------------------------------
@@ -2692,6 +2693,7 @@ export async function runLLMStream(params: {
                 });
             }
             if (citationSources.length > 0) {
+                console.log("[runToolCalls] emitting citation_sources SSE", { count: citationSources.length });
                 write(`data: ${JSON.stringify({ type: "citation_sources", sources: citationSources })}\n\n`);
                 events.push({ type: "citation_sources", sources: citationSources });
             }
@@ -2720,22 +2722,36 @@ export async function runLLMStream(params: {
 
     flushText();
 
+    // Build chunk_id → title map from citation_sources events emitted this turn
+    const chunkTitleMap = new Map<string, string>();
+    for (const ev of events) {
+        if (ev.type === "citation_sources") {
+            for (const s of (ev as { sources: Array<{ chunk_id: string; title: string }> }).sources) {
+                chunkTitleMap.set(s.chunk_id, s.title);
+            }
+        }
+    }
+
     // Parse and emit citations from <CITATIONS> block
     const citations = buildCitations
         ? buildCitations(fullText)
         : parseCitations(fullText).map((c) => {
               const docInfo = resolveDoc(c.doc_id, docIndex);
+              const filename = docInfo?.filename
+                  ?? chunkTitleMap.get(c.doc_id)
+                  ?? c.doc_id;
               return {
                   ref: c.ref,
                   doc_id: c.doc_id,
                   document_id: docInfo?.document_id,
                   version_id: docInfo?.version_id ?? null,
                   version_number: docInfo?.version_number ?? null,
-                  filename: docInfo?.filename ?? c.doc_id,
+                  filename,
                   page: c.page,
                   quote: c.quote,
               };
           });
+    console.log("[runLLMStream] emitting citations SSE", { count: citations.length, firstRef: citations[0]?.ref, firstDocId: citations[0]?.doc_id });
     write(`data: ${JSON.stringify({ type: "citations", citations })}\n\n`);
     write("data: [DONE]\n\n");
 
@@ -2751,8 +2767,19 @@ export function extractAnnotations(
     docIndex: DocIndex,
     events?: { type: string } & Record<string, unknown>[] | unknown[],
 ): unknown[] {
+    const chunkTitleMap = new Map<string, string>();
+    if (Array.isArray(events)) {
+        for (const ev of events as { type?: string; sources?: Array<{ chunk_id: string; title: string }> }[]) {
+            if (ev?.type === "citation_sources" && Array.isArray(ev.sources)) {
+                for (const s of ev.sources) chunkTitleMap.set(s.chunk_id, s.title);
+            }
+        }
+    }
     const out: unknown[] = parseCitations(fullText).map((c) => {
         const docInfo = resolveDoc(c.doc_id, docIndex);
+        const filename = docInfo?.filename
+            ?? chunkTitleMap.get(c.doc_id)
+            ?? c.doc_id;
         return {
             type: "citation_data",
             ref: c.ref,
@@ -2760,7 +2787,7 @@ export function extractAnnotations(
             document_id: docInfo?.document_id,
             version_id: docInfo?.version_id ?? null,
             version_number: docInfo?.version_number ?? null,
-            filename: docInfo?.filename ?? c.doc_id,
+            filename,
             page: c.page,
             quote: c.quote,
         };
