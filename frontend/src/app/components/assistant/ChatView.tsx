@@ -132,6 +132,19 @@ export function ChatView({
      */
     const openCitation = useCallback(
         (citation: MikeCitationAnnotation) => {
+            // Web citations: the model puts the full URL in doc_id when citing
+            // a web source (kenyalaw.org, regulator domains, etc.). These have
+            // no corresponding uploaded document, so the DocPanel fetch path
+            // (/single-documents/{id}/docx) 404s. Open in a new tab instead.
+            const docIdStr = citation.doc_id ?? "";
+            if (docIdStr.startsWith("http://") || docIdStr.startsWith("https://")) {
+                window.open(docIdStr, "_blank", "noopener,noreferrer");
+                return;
+            }
+
+            // Document citations: model cited an uploaded document by chat-local
+            // doc-N handle. document_id resolves to the real backend document and
+            // DocPanel fetches its docx for inline rendering.
             upsertTab({
                 kind: "citation",
                 id: citation.document_id,
