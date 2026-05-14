@@ -8,6 +8,10 @@
     --color-foreground: var(--foreground);
     --font-sans: var(--font-inter);
     --font-serif: var(--font-eb-garamond);
+    --font-display: var(--font-playfair);
+    --color-gold: #C4A882;
+    --color-cream: #F5F0E8;
+    --color-dark: #0A0A0A;
     --color-blue: rgb(0, 136, 255);
     --color-blue-50: rgba(0, 136, 255, 0.05);
     --color-blue-100: rgba(0, 136, 255, 0.1);

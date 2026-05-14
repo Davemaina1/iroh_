@@ -8,23 +8,23 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicy() {
   return (
-    <>
+    <div className="bg-cream text-dark min-h-screen">
       <nav className="border-b border-dark/5 py-4 px-6">
         <div className="max-w-3xl mx-auto">
-          <Link href="/" className="font-serif text-xl font-semibold">
+          <Link href="/" className="font-display text-xl font-semibold">
             Iroh
           </Link>
         </div>
       </nav>
       <main className="max-w-3xl mx-auto px-6 py-16">
-        <h1 className="font-serif text-4xl font-semibold mb-2">
+        <h1 className="font-display text-4xl font-semibold mb-2">
           Privacy Policy
         </h1>
-        <p className="text-dark/50 mb-12">Effective: 14 May 2026</p>
+        <p className="text-dark/50 mb-12 font-sans">Effective: 14 May 2026</p>
 
-        <div className="prose prose-neutral max-w-none space-y-8 text-dark/80 leading-relaxed">
+        <div className="space-y-8 text-dark/80 leading-relaxed font-sans">
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               1. Who we are
             </h2>
             <p>
@@ -43,7 +43,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               2. Data we collect
             </h2>
             <p>We collect the following categories of personal data:</p>
@@ -68,7 +68,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               3. How we use your data
             </h2>
             <ul className="list-disc pl-6 space-y-1">
@@ -90,7 +90,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               4. Data storage and security
             </h2>
             <p>
@@ -103,7 +103,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               5. Your rights under the Kenya Data Protection Act 2019
             </h2>
             <p>
@@ -139,7 +139,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               6. Cookies
             </h2>
             <p>
@@ -151,7 +151,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               7. Third-party services
             </h2>
             <p>
@@ -178,7 +178,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               8. Changes to this policy
             </h2>
             <p>
@@ -190,7 +190,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               9. Contact
             </h2>
             <p>
@@ -213,6 +213,6 @@ export default function PrivacyPolicy() {
           </section>
         </div>
       </main>
-    </>
+    </div>
   );
 }

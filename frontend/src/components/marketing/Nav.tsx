@@ -19,16 +19,24 @@ export default function Nav() {
               fill="#C4A882"
             />
           </svg>
-          <span className="font-serif text-xl font-semibold tracking-tight">
+          <span className="font-display text-xl font-semibold tracking-tight">
             Iroh
           </span>
         </Link>
-        <Link
-          href="/signup"
-          className="bg-dark text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-dark/90 transition-colors"
-        >
-          Request early access
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/login"
+            className="text-sm text-dark/70 hover:text-dark transition-colors"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/login"
+            className="bg-gold text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gold/90 transition-colors"
+          >
+            Try it out
+          </Link>
+        </div>
       </div>
     </nav>
   );

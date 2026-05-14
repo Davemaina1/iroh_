@@ -11,11 +11,11 @@ const faqs = [
   },
   {
     q: "Can I trust the citations?",
-    a: "Every answer includes direct citations to source documents. You can click through to verify the exact provision. Our retrieval system uses hybrid search (semantic + keyword) with reranking for accuracy.",
+    a: "Iroh does not invent citations. Every answer is grounded in the actual text of statutes, judgments, and procedure rules retrieved from our corpus, and each citation is clickable so you can verify the source yourself. The AI may still summarise a provision imperfectly, so we strongly recommend verifying any citation before relying on it in court or in advice to a client.",
   },
   {
     q: "What jurisdictions are available?",
-    a: "Kenya is live today with comprehensive coverage of legislation and over 1,000 court judgments. Rwanda, South Africa, and Ghana are in active development.",
+    a: "Kenya is live. We cover the Laws of Kenya, subsidiary legislation, case law from the superior courts and key tribunals, circulars, and the procedure rules that govern daily practice. Rwanda, Ghana, and South Africa are next.",
   },
   {
     q: "Who is this for?",
@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     q: "How current is the legal data?",
-    a: "Our Kenyan corpus includes legislation and case law up to 2024. We continuously update our databases as new judgments and amendments are published.",
+    a: "Iroh's primary retrieval is from a curated Kenya Law corpus, with live fallback to kenyalaw.org for very recent material that may not yet be in the corpus. Always verify on the official source before relying on any output.",
   },
   {
     q: "Is my research data private?",
@@ -37,7 +37,7 @@ export default function FAQ() {
   return (
     <section className="py-20 px-6 bg-white">
       <div className="max-w-3xl mx-auto">
-        <h2 className="font-serif text-3xl md:text-4xl font-semibold text-center mb-12">
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-center mb-12">
           Frequently asked questions
         </h2>
         <div className="space-y-3">
@@ -50,7 +50,7 @@ export default function FAQ() {
                 onClick={() => setOpen(open === i ? null : i)}
                 className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-cream/50 transition-colors"
               >
-                <span className="font-medium">{faq.q}</span>
+                <span className="font-medium font-sans">{faq.q}</span>
                 <ChevronDown
                   className={`w-5 h-5 text-dark/40 transition-transform ${
                     open === i ? "rotate-180" : ""
@@ -65,7 +65,7 @@ export default function FAQ() {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <p className="px-6 pb-4 text-sm text-dark/60 leading-relaxed">
+                    <p className="px-6 pb-4 text-sm text-dark/60 leading-relaxed font-sans">
                       {faq.a}
                     </p>
                   </motion.div>

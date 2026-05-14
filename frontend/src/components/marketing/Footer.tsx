@@ -17,9 +17,9 @@ export default function Footer() {
               fill="#C4A882"
             />
           </svg>
-          <span className="font-serif text-sm font-medium">Iroh</span>
+          <span className="font-display text-sm font-medium">Iroh</span>
         </div>
-        <nav className="flex gap-6 text-sm text-dark/60">
+        <nav className="flex gap-6 text-sm text-dark/60 font-sans">
           <Link href="/privacy" className="hover:text-dark transition-colors">
             Privacy Policy
           </Link>
@@ -33,7 +33,7 @@ export default function Footer() {
             Contact
           </a>
         </nav>
-        <p className="text-xs text-dark/40">
+        <p className="text-xs text-dark/40 font-sans">
           &copy; {new Date().getFullYear()} Algedi Intelligence Labs Ltd. All
           rights reserved.
         </p>

@@ -34,6 +34,7 @@
         "docx": "^9.6.1",
         "docx-preview": "^0.3.7",
         "exceljs": "^4.4.0",
+        "framer-motion": "^12.38.0",
         "katex": "^0.16.27",
         "lucide-react": "^0.553.0",
         "mammoth": "^1.11.0",

@@ -13,10 +13,10 @@ export default function Jurisdictions() {
   return (
     <section className="py-20 px-6">
       <div className="max-w-5xl mx-auto">
-        <h2 className="font-serif text-3xl md:text-4xl font-semibold text-center mb-4">
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-center mb-4">
           Multi-jurisdiction coverage
         </h2>
-        <p className="text-center text-dark/60 mb-12 max-w-xl mx-auto">
+        <p className="text-center text-dark/60 mb-12 max-w-xl mx-auto font-sans">
           Starting with Kenya, expanding across the continent.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -34,7 +34,7 @@ export default function Jurisdictions() {
               }`}
             >
               <span className="text-4xl">{j.flag}</span>
-              <p className="mt-3 font-medium">{j.country}</p>
+              <p className="mt-3 font-medium font-sans">{j.country}</p>
               <span
                 className={`mt-1 inline-block text-xs px-2 py-0.5 rounded-full ${
                   j.active

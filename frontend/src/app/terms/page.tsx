@@ -8,23 +8,23 @@ export const metadata: Metadata = {
 
 export default function TermsOfService() {
   return (
-    <>
+    <div className="bg-cream text-dark min-h-screen">
       <nav className="border-b border-dark/5 py-4 px-6">
         <div className="max-w-3xl mx-auto">
-          <Link href="/" className="font-serif text-xl font-semibold">
+          <Link href="/" className="font-display text-xl font-semibold">
             Iroh
           </Link>
         </div>
       </nav>
       <main className="max-w-3xl mx-auto px-6 py-16">
-        <h1 className="font-serif text-4xl font-semibold mb-2">
+        <h1 className="font-display text-4xl font-semibold mb-2">
           Terms of Service
         </h1>
-        <p className="text-dark/50 mb-12">Effective: 14 May 2026</p>
+        <p className="text-dark/50 mb-12 font-sans">Effective: 14 May 2026</p>
 
-        <div className="prose prose-neutral max-w-none space-y-8 text-dark/80 leading-relaxed">
+        <div className="space-y-8 text-dark/80 leading-relaxed font-sans">
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               1. Acceptance of terms
             </h2>
             <p>
@@ -36,7 +36,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               2. Description of service
             </h2>
             <p>
@@ -48,7 +48,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               3. Important disclaimer — not legal advice
             </h2>
             <p className="font-semibold">
@@ -70,7 +70,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               4. Permitted use
             </h2>
             <p>You may use the Service for:</p>
@@ -100,7 +100,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               5. User accounts and security
             </h2>
             <p>
@@ -118,7 +118,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               6. Intellectual property
             </h2>
             <p>
@@ -135,7 +135,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               7. Limitation of liability
             </h2>
             <p>
@@ -163,7 +163,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               8. Governing law and dispute resolution
             </h2>
             <p>
@@ -175,7 +175,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               9. Changes to these terms
             </h2>
             <p>
@@ -187,7 +187,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-semibold text-dark mb-3">
+            <h2 className="font-display text-xl font-semibold text-dark mb-3">
               10. Contact
             </h2>
             <p>
@@ -209,6 +209,6 @@ export default function TermsOfService() {
           </section>
         </div>
       </main>
-    </>
+    </div>
   );
 }

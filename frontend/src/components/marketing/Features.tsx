@@ -47,10 +47,10 @@ export default function Features() {
   return (
     <section className="py-20 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
-        <h2 className="font-serif text-3xl md:text-4xl font-semibold text-center mb-4">
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-center mb-4">
           Built for African legal professionals
         </h2>
-        <p className="text-center text-dark/60 mb-12 max-w-xl mx-auto">
+        <p className="text-center text-dark/60 mb-12 max-w-xl mx-auto font-sans">
           Tools designed for how law is actually practiced across the continent.
         </p>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -64,8 +64,8 @@ export default function Features() {
               className="p-6 rounded-xl border border-dark/5 hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all"
             >
               <f.icon className="w-8 h-8 text-gold mb-4" strokeWidth={1.5} />
-              <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
-              <p className="text-sm text-dark/60 leading-relaxed">{f.desc}</p>
+              <h3 className="font-semibold text-lg mb-2 font-sans">{f.title}</h3>
+              <p className="text-sm text-dark/60 leading-relaxed font-sans">{f.desc}</p>
             </motion.div>
           ))}
         </div>
