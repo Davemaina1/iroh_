@@ -87,7 +87,6 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
             role: "user",
             content: lastUser.content,
             files: lastUser.files ?? null,
-            workflow: lastUser.workflow ?? null,
         });
     }
 

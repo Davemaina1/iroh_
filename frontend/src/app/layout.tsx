@@ -26,10 +26,11 @@ export const metadata: Metadata = {
         "AI-powered legal document analysis and contract review platform.",
     icons: {
         icon: [
-            { url: "/icon.svg", type: "image/svg+xml" },
-            { url: "/favicon.ico" },
+            { url: "/favicon.ico", sizes: "any" },
+            { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+            { url: "/logo/flame-gold.svg", type: "image/svg+xml" },
         ],
-        apple: "/apple-touch-icon.png",
+        apple: "/logo/flame-gold.png",
     },
 };
 

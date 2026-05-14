@@ -5,34 +5,28 @@ import { motion } from "framer-motion";
 
 export default function CTAFooter() {
   return (
-    <section className="py-24 px-6">
+    <section className="py-32 px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-3xl mx-auto text-center"
+        className="max-w-4xl mx-auto text-center"
       >
-        <h2 className="font-display text-3xl md:text-5xl font-semibold leading-tight">
+        <h2 className="font-display text-4xl md:text-6xl font-semibold leading-tight tracking-tight">
           The future of legal research
           <br />
           <span className="text-gold">in Africa starts here.</span>
         </h2>
-        <p className="mt-6 text-dark/60 font-sans">
-          Join legal professionals already using Iroh to research faster and cite
-          with confidence.
+        <p className="mt-6 text-dark/50 font-sans text-lg max-w-xl mx-auto">
+          Join legal professionals already using Iroh to research faster and
+          cite with confidence.
         </p>
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="mt-10">
           <Link
             href="/login"
-            className="bg-gold text-white px-8 py-3.5 rounded-full font-medium hover:bg-gold/90 transition-colors"
+            className="inline-block bg-gold text-white px-10 py-4 rounded-full font-medium text-lg hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
           >
-            Try it out
-          </Link>
-          <Link
-            href="/waitlist"
-            className="text-sm text-dark/60 hover:text-dark transition-colors"
-          >
-            Join the waitlist
+            Try Iroh free
           </Link>
         </div>
       </motion.div>

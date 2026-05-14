@@ -5,32 +5,39 @@ import { motion } from "framer-motion";
 const steps = [
   {
     step: "01",
-    title: "Select your jurisdiction",
-    desc: "Choose from available African legal systems. Start with Kenya — more coming soon.",
-  },
-  {
-    step: "02",
     title: "Ask your question",
     desc: "Type your legal research question in plain language. No complex query syntax needed.",
   },
   {
+    step: "02",
+    title: "AI retrieves the law",
+    desc: "Iroh searches across statutes, case law, and procedural rules to find relevant provisions.",
+  },
+  {
     step: "03",
     title: "Get cited answers",
-    desc: "Receive precise answers with direct citations to legislation, case law, and procedure.",
+    desc: "Receive precise answers with direct, clickable citations to the source material.",
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 px-6">
+    <section id="how-it-works" className="py-28 px-6 bg-dark text-white">
       <div className="max-w-5xl mx-auto">
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-center mb-4">
-          How it works
-        </h2>
-        <p className="text-center text-dark/60 mb-16 max-w-xl mx-auto font-sans">
-          From question to cited answer in three steps.
-        </p>
-        <div className="grid md:grid-cols-3 gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-20"
+        >
+          <h2 className="font-display text-4xl md:text-5xl font-semibold tracking-tight">
+            How it works
+          </h2>
+          <p className="mt-4 text-white/50 font-sans text-lg">
+            From question to cited answer in three steps.
+          </p>
+        </motion.div>
+        <div className="grid md:grid-cols-3 gap-12">
           {steps.map((s, i) => (
             <motion.div
               key={s.step}
@@ -38,15 +45,24 @@ export default function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.15 }}
-              className="text-center"
+              className="relative"
             >
-              <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-6">
-                <span className="font-display text-2xl text-gold font-semibold">
-                  {s.step}
-                </span>
+              <span className="font-display text-7xl font-bold text-white/5 absolute -top-6 -left-2">
+                {s.step}
+              </span>
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mb-6">
+                  <span className="font-display text-lg text-gold font-semibold">
+                    {s.step}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-xl mb-3 font-sans">
+                  {s.title}
+                </h3>
+                <p className="text-white/50 leading-relaxed font-sans">
+                  {s.desc}
+                </p>
               </div>
-              <h3 className="font-semibold text-lg mb-2 font-sans">{s.title}</h3>
-              <p className="text-sm text-dark/60 leading-relaxed font-sans">{s.desc}</p>
             </motion.div>
           ))}
         </div>

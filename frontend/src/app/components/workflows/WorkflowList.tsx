@@ -25,7 +25,7 @@ import { DisplayWorkflowModal } from "./DisplayWorkflowModal";
 import { NewWorkflowModal } from "./NewWorkflowModal";
 import { ToolbarTabs } from "../shared/ToolbarTabs";
 import { RowActions } from "../shared/RowActions";
-import { MikeIcon } from "@/components/chat/mike-icon";
+import { IrohSpinner } from "@/components/IrohSpinner";
 import { useAuth } from "@/contexts/AuthContext";
 
 type Tab = "all" | "builtin" | "custom" | "hidden";
@@ -535,7 +535,7 @@ export function WorkflowList() {
                                 <div className="w-28 shrink-0">
                                     {wf.is_system ? (
                                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600">
-                                            <MikeIcon size={14} />
+                                            <IrohSpinner size={14} />
                                             Iroh
                                         </span>
                                     ) : wf.user_id === user?.id ? (

@@ -23,11 +23,11 @@ const faqs = [
   },
   {
     q: "How current is the legal data?",
-    a: "Iroh's primary retrieval is from a curated Kenya Law corpus, with live fallback to kenyalaw.org for very recent material that may not yet be in the corpus. Always verify on the official source before relying on any output.",
+    a: "Iroh’s primary retrieval is from a curated Kenya Law corpus, with live fallback to kenyalaw.org for very recent material that may not yet be in the corpus. Always verify on the official source before relying on any output.",
   },
   {
     q: "Is my research data private?",
-    a: "Yes. Your queries are not shared with other users or used to train AI models. See our Privacy Policy for full details on data handling under Kenya's Data Protection Act 2019.",
+    a: "Yes. Your queries are not shared with other users or used to train AI models. See our Privacy Policy for full details on data handling under Kenya’s Data Protection Act 2019.",
   },
 ];
 
@@ -35,24 +35,31 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section className="py-20 px-6 bg-white">
+    <section className="py-28 px-6 bg-white">
       <div className="max-w-3xl mx-auto">
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-center mb-12">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="font-display text-4xl md:text-5xl font-semibold text-center mb-16 tracking-tight"
+        >
           Frequently asked questions
-        </h2>
-        <div className="space-y-3">
+        </motion.h2>
+        <div className="space-y-2">
           {faqs.map((faq, i) => (
             <div
               key={i}
-              className="border border-dark/5 rounded-xl overflow-hidden"
+              className="border-b border-dark/5 last:border-b-0"
             >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
-                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-cream/50 transition-colors"
+                className="w-full py-5 flex items-center justify-between text-left group"
               >
-                <span className="font-medium font-sans">{faq.q}</span>
+                <span className="font-medium text-base font-sans group-hover:text-gold transition-colors">
+                  {faq.q}
+                </span>
                 <ChevronDown
-                  className={`w-5 h-5 text-dark/40 transition-transform ${
+                  className={`w-5 h-5 text-dark/30 transition-transform shrink-0 ml-4 ${
                     open === i ? "rotate-180" : ""
                   }`}
                 />
@@ -65,7 +72,7 @@ export default function FAQ() {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <p className="px-6 pb-4 text-sm text-dark/60 leading-relaxed font-sans">
+                    <p className="pb-5 text-dark/55 leading-relaxed font-sans">
                       {faq.a}
                     </p>
                   </motion.div>

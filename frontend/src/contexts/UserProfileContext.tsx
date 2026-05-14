@@ -11,6 +11,27 @@ import React, {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
+const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+
+async function patchProfile(
+    body: Record<string, unknown>,
+): Promise<boolean> {
+    const {
+        data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) return false;
+    const res = await fetch(`${API_BASE}/user/profile`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(body),
+    });
+    return res.ok;
+}
+
 interface UserProfile {
     displayName: string | null;
     organisation: string | null;
@@ -49,24 +70,28 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const loadProfile = useCallback(async (userId: string) => {
+    const loadProfile = useCallback(async (_userId: string) => {
         try {
-            const { data, error } = await supabase
-                .from("user_profiles")
-                .select("*")
-                .eq("user_id", userId)
-                .single();
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+            if (!session?.access_token) {
+                setProfile(null);
+                return;
+            }
 
-            // Define credit limit constant
-            const MONTHLY_CREDIT_LIMIT = 999999; // temporarily unlimited
+            const res = await fetch(`${API_BASE}/user/profile`, {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            });
 
-            // Calculate a default future reset date (30 days from now)
+            const MONTHLY_CREDIT_LIMIT = 999999;
             const futureResetDate = new Date();
             futureResetDate.setDate(futureResetDate.getDate() + 30);
             const defaultResetDateStr = futureResetDate.toISOString();
 
-            if (error) {
-                // Set fallback profile data if profile doesn't exist
+            if (!res.ok) {
                 setProfile({
                     displayName: null,
                     organisation: null,
@@ -81,69 +106,44 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
                 return;
             }
 
-            // Use fetched data to update profile state
-            if (data) {
-                let creditsUsed = data.message_credits_used;
-                let resetDate = data.credits_reset_date;
-                let creditsRemaining = MONTHLY_CREDIT_LIMIT - creditsUsed;
-                let shouldUpdateDb = false;
+            const data = await res.json();
+            let creditsUsed = data.message_credits_used;
+            let resetDate = data.credits_reset_date;
+            let creditsRemaining = MONTHLY_CREDIT_LIMIT - creditsUsed;
 
-                // Check if credits have expired and need reset
-                if (resetDate && new Date() > new Date(resetDate)) {
-                    // Calculate new reset date
-                    const newResetDate = new Date();
-                    newResetDate.setDate(newResetDate.getDate() + 30);
-                    resetDate = newResetDate.toISOString();
-                    creditsUsed = 0;
-                    creditsRemaining = MONTHLY_CREDIT_LIMIT;
-                    shouldUpdateDb = true;
-                }
-
-                // 1. Update local state immediately
-                setProfile({
-                    displayName: data.display_name,
-                    organisation: data.organisation ?? null,
-                    messageCreditsUsed: creditsUsed,
-                    creditsResetDate: resetDate,
-                    creditsRemaining: creditsRemaining,
-                    tier: data.tier || "Free",
-                    tabularModel:
-                        data.tabular_model || "gemini-3-flash-preview",
-                    claudeApiKey: data.claude_api_key ?? null,
-                    geminiApiKey: data.gemini_api_key ?? null,
+            if (resetDate && new Date() > new Date(resetDate)) {
+                const newResetDate = new Date();
+                newResetDate.setDate(newResetDate.getDate() + 30);
+                resetDate = newResetDate.toISOString();
+                creditsUsed = 0;
+                creditsRemaining = MONTHLY_CREDIT_LIMIT;
+                patchProfile({
+                    message_credits_used: 0,
+                    credits_reset_date: resetDate,
                 });
-
-                // 2. Update database in background if needed
-                if (shouldUpdateDb) {
-                    supabase
-                        .from("user_profiles")
-                        .update({
-                            message_credits_used: 0,
-                            credits_reset_date: resetDate,
-                            updated_at: new Date().toISOString(),
-                        })
-                        .eq("user_id", userId)
-                        .then(({ error }) => {
-                            if (error)
-                                console.error(
-                                    "Failed to auto-reset credits",
-                                    error,
-                                );
-                        });
-                }
             }
-        } catch (e) {
-            // Calculate a default future reset date for fallback
+
+            setProfile({
+                displayName: data.display_name,
+                organisation: data.organisation ?? null,
+                messageCreditsUsed: creditsUsed,
+                creditsResetDate: resetDate,
+                creditsRemaining: creditsRemaining,
+                tier: data.tier || "Free",
+                tabularModel:
+                    data.tabular_model || "gemini-3-flash-preview",
+                claudeApiKey: data.claude_api_key ?? null,
+                geminiApiKey: data.gemini_api_key ?? null,
+            });
+        } catch {
             const futureResetDate = new Date();
             futureResetDate.setDate(futureResetDate.getDate() + 30);
-
-            // Set fallback profile data on exception
             setProfile({
                 displayName: null,
                 organisation: null,
                 messageCreditsUsed: 0,
                 creditsResetDate: futureResetDate.toISOString(),
-                creditsRemaining: 999999, // temporarily unlimited
+                creditsRemaining: 999999,
                 tier: "Free",
                 tabularModel: "gemini-3-flash-preview",
                 claudeApiKey: null,
@@ -166,28 +166,14 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
 
     const updateDisplayName = useCallback(
         async (displayName: string): Promise<boolean> => {
-            if (!user) {
-                return false;
+            if (!user) return false;
+            const ok = await patchProfile({ display_name: displayName });
+            if (ok) {
+                setProfile((prev) =>
+                    prev ? { ...prev, displayName } : null,
+                );
             }
-
-            try {
-                const { error } = await supabase
-                    .from("user_profiles")
-                    .update({
-                        display_name: displayName,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("user_id", user.id);
-
-                if (error) {
-                    throw error;
-                }
-
-                setProfile((prev) => (prev ? { ...prev, displayName } : null));
-                return true;
-            } catch {
-                return false;
-            }
+            return ok;
         },
         [user],
     );
@@ -195,22 +181,13 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     const updateOrganisation = useCallback(
         async (organisation: string): Promise<boolean> => {
             if (!user) return false;
-            try {
-                const { error } = await supabase
-                    .from("user_profiles")
-                    .update({
-                        organisation,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("user_id", user.id);
-                if (error) throw error;
+            const ok = await patchProfile({ organisation });
+            if (ok) {
                 setProfile((prev) =>
                     prev ? { ...prev, organisation } : null,
                 );
-                return true;
-            } catch {
-                return false;
             }
+            return ok;
         },
         [user],
     );
@@ -223,22 +200,13 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
             if (!user) return false;
             const dbField = field === "tabularModel" ? "tabular_model" : "";
             if (!dbField) return false;
-            try {
-                const { error } = await supabase
-                    .from("user_profiles")
-                    .update({
-                        [dbField]: value,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("user_id", user.id);
-                if (error) throw error;
+            const ok = await patchProfile({ [dbField]: value });
+            if (ok) {
                 setProfile((prev) =>
                     prev ? { ...prev, [field]: value } : null,
                 );
-                return true;
-            } catch {
-                return false;
             }
+            return ok;
         },
         [user],
     );
@@ -254,22 +222,13 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
             const stateField =
                 provider === "claude" ? "claudeApiKey" : "geminiApiKey";
             const normalized = value?.trim() ? value.trim() : null;
-            try {
-                const { error } = await supabase
-                    .from("user_profiles")
-                    .update({
-                        [dbField]: normalized,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("user_id", user.id);
-                if (error) throw error;
+            const ok = await patchProfile({ [dbField]: normalized });
+            if (ok) {
                 setProfile((prev) =>
                     prev ? { ...prev, [stateField]: normalized } : null,
                 );
-                return true;
-            } catch {
-                return false;
             }
+            return ok;
         },
         [user],
     );
@@ -281,45 +240,25 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     }, [user, loadProfile]);
 
     const incrementMessageCredits = useCallback(async (): Promise<boolean> => {
-        if (!user || !profile) {
-            return false;
-        }
+        if (!user || !profile) return false;
+        if (profile.creditsRemaining <= 0) return false;
 
-        // Check if user has credits remaining
-        if (profile.creditsRemaining <= 0) {
-            return false;
-        }
-
-        try {
-            const newCreditsUsed = profile.messageCreditsUsed + 1;
-
-            const { error } = await supabase
-                .from("user_profiles")
-                .update({
-                    message_credits_used: newCreditsUsed,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq("user_id", user.id);
-
-            if (error) {
-                throw error;
-            }
-
-            // Update local state
+        const newCreditsUsed = profile.messageCreditsUsed + 1;
+        const ok = await patchProfile({
+            message_credits_used: newCreditsUsed,
+        });
+        if (ok) {
             setProfile((prev) =>
                 prev
                     ? {
                           ...prev,
                           messageCreditsUsed: newCreditsUsed,
-                          creditsRemaining: 999999 - newCreditsUsed, // temporarily unlimited
+                          creditsRemaining: 999999 - newCreditsUsed,
                       }
                     : null,
             );
-
-            return true;
-        } catch (err) {
-            return false;
         }
+        return ok;
     }, [user, profile]);
 
     return (

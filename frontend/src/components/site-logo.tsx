@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { MikeIcon } from "@/components/chat/mike-icon";
 
 interface SiteLogoProps {
     size?: "sm" | "md" | "lg" | "xl";
@@ -8,28 +7,25 @@ interface SiteLogoProps {
     asLink?: boolean;
 }
 
+const heightClasses = {
+    sm: "h-[20px] w-auto",
+    md: "h-[22px] w-auto",
+    lg: "h-[32px] w-auto",
+    xl: "h-[48px] w-auto",
+};
+
 export function SiteLogo({
     size = "md",
     className = "",
     animate = false,
     asLink = false,
 }: SiteLogoProps) {
-    const landingHref =
-        process.env.NODE_ENV === "production"
-            ? "https://mikeoss.com"
-            : "http://localhost:3000";
+    const landingHref = "/";
     const sizeClasses = {
         sm: "text-xl",
         md: "text-2xl",
         lg: "text-4xl",
         xl: "text-6xl",
-    };
-
-    const iconSizes = {
-        sm: 20,
-        md: 22,
-        lg: 32,
-        xl: 48,
     };
 
     const logo = (
@@ -38,7 +34,11 @@ export function SiteLogo({
                 animate ? "sidebar-fade-in" : ""
             } ${className}`}
         >
-            <MikeIcon size={iconSizes[size]} />
+            <img
+                src="/logo/flame-black.svg"
+                alt="Iroh"
+                className={heightClasses[size]}
+            />
             <span>Iroh</span>
         </h1>
     );
