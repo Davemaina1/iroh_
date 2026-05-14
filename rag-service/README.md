@@ -1,6 +1,6 @@
 # Iroh RAG Service
 
-Python FastAPI sidecar that owns embedding, BM25 hybrid retrieval, and bge-reranker re-ranking over the Kenya Law corpus.
+Python FastAPI sidecar — ONNX embedding + BM25 hybrid retrieval with RRF fusion over the Kenya Law corpus. Runs within 512MB RAM (no torch/sentence-transformers).
 
 ## Prerequisites
 
