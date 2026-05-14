@@ -28,12 +28,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [authLoading, setAuthLoading] = useState(true);
 
     useEffect(() => {
-        const ensureProfile = async (accessToken: string) => {
+        const ensureProfile = async (accessToken: string, userMeta?: Record<string, unknown>) => {
             const apiBase =
                 process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+            const firstName = (userMeta?.first_name as string) || (userMeta?.full_name as string)?.split(/\s+/)[0] || "";
             await fetch(`${apiBase}/user/profile`, {
                 method: "POST",
-                headers: { Authorization: `Bearer ${accessToken}` },
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(firstName ? { display_name: firstName } : {}),
             }).catch((e) => {
                 console.log(e);
             });
@@ -49,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: session.user.id,
                     email: session.user.email || "",
                 });
-                ensureProfile(session.access_token);
+                ensureProfile(session.access_token, session.user.user_metadata);
             }
             setAuthLoading(false);
         };
@@ -64,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: session.user.id,
                     email: session.user.email || "",
                 });
-                ensureProfile(session.access_token);
+                ensureProfile(session.access_token, session.user.user_metadata);
             } else {
                 setUser(null);
             }

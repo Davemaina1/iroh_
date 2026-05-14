@@ -50,20 +50,25 @@ export default function SignupPage() {
         }
 
         try {
+            const trimmedName = name.trim();
+            const firstName = trimmedName ? trimmedName.split(/\s+/)[0] : "";
+
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    data: {
+                        full_name: trimmedName,
+                        first_name: firstName,
+                    },
+                },
             });
 
             if (error) throw error;
 
             if (data.session) {
-                const trimmedName = name.trim();
                 const trimmedOrg = organisation.trim();
-                if (trimmedName || trimmedOrg) {
-                    const firstName = trimmedName
-                        ? trimmedName.split(/\s+/)[0]
-                        : "";
+                if (firstName || trimmedOrg) {
                     const apiBase =
                         process.env.NEXT_PUBLIC_API_BASE_URL ??
                         "http://localhost:3001";

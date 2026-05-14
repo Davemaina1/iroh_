@@ -4,17 +4,36 @@ import { createServerSupabase } from "../lib/supabase";
 
 export const userRouter = Router();
 
-// POST /user/profile — ensure profile row exists
+// POST /user/profile — ensure profile row exists, backfill display_name if missing
 userRouter.post("/profile", requireAuth, async (req, res) => {
   const userId = res.locals.userId as string;
+  const displayName = req.body?.display_name as string | undefined;
   const db = createServerSupabase();
-  const { error } = await db
+
+  // Ensure profile row exists
+  const { error: upsertErr } = await db
     .from("user_profiles")
     .upsert(
       { user_id: userId },
       { onConflict: "user_id", ignoreDuplicates: true },
     );
-  if (error) return void res.status(500).json({ detail: error.message });
+  if (upsertErr) return void res.status(500).json({ detail: upsertErr.message });
+
+  // Backfill display_name if provided and currently empty
+  if (displayName?.trim()) {
+    const { data: existing } = await db
+      .from("user_profiles")
+      .select("display_name")
+      .eq("user_id", userId)
+      .single();
+    if (!existing?.display_name?.trim()) {
+      await db
+        .from("user_profiles")
+        .update({ display_name: displayName.trim() })
+        .eq("user_id", userId);
+    }
+  }
+
   res.json({ ok: true });
 });
 
