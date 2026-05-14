@@ -2751,7 +2751,7 @@ export async function runLLMStream(params: {
                   quote: c.quote,
               };
           });
-    console.log("[runLLMStream] emitting citations SSE", { count: citations.length, firstRef: citations[0]?.ref, firstDocId: citations[0]?.doc_id });
+    console.log("[runLLMStream] emitting citations SSE", { count: citations.length, firstRef: (citations[0] as Record<string, unknown>)?.ref, firstDocId: (citations[0] as Record<string, unknown>)?.doc_id });
     write(`data: ${JSON.stringify({ type: "citations", citations })}\n\n`);
     write("data: [DONE]\n\n");
 
